@@ -4,6 +4,7 @@ namespace App\Services\Hotel;
 
 use App\Common\FilterException;
 use App\Common\SingletonTrait;
+use App\Common\Timers;
 use App\Entities\HotelEntity;
 use App\Entities\RoomEntity;
 use App\Services\Room\RoomService;
@@ -223,9 +224,13 @@ class UnoptimizedHotelService extends AbstractHotelService {
     $hotel = ( new HotelEntity() )
       ->setId( $data['ID'] )
       ->setName( $data['display_name'] );
+
+    $timer = Timers::getInstance();
     
     // Charge les données meta de l'hôtel
+    $timerid = $timer->startTimer( 'getMetas' ); 
     $metasData = $this->getMetas( $hotel );
+    $timer->endTimer('getMetas', $timerid);
     $hotel->setAddress( $metasData['address'] );
     $hotel->setGeoLat( $metasData['geo_lat'] );
     $hotel->setGeoLng( $metasData['geo_lng'] );
@@ -233,12 +238,17 @@ class UnoptimizedHotelService extends AbstractHotelService {
     $hotel->setPhone( $metasData['phone'] );
     
     // Définit la note moyenne et le nombre d'avis de l'hôtel
+    $timerid = $timer->startTimer( 'getReviews' ); 
     $reviewsData = $this->getReviews( $hotel );
+    $timer->endTimer('getReviews', $timerid);
+
     $hotel->setRating( $reviewsData['rating'] );
     $hotel->setRatingCount( $reviewsData['count'] );
     
     // Charge la chambre la moins chère de l'hôtel
+    $timerid = $timer->startTimer( 'getCheapest' );
     $cheapestRoom = $this->getCheapestRoom( $hotel, $args );
+    $timer->endTimer('getCheapest', $timerid);
     $hotel->setCheapestRoom($cheapestRoom);
     
     // Verification de la distance

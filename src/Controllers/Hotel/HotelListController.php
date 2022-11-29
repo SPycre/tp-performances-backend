@@ -5,6 +5,7 @@ namespace App\Controllers\Hotel;
 use App\Controllers\AbstractController;
 use App\Services\Hotel\AbstractHotelService;
 use App\Services\Room\AbstractRoomService;
+use App\Common\Timers;
 use function App\Common\get_template;
 use function App\Common\sanitize;
 use const App\__PROJECT_ROOT__;
@@ -142,7 +143,7 @@ class HotelListController extends AbstractController {
     }
     
     $hotels = $this->hotelService->list( $args );
-    
+    header('Server-Timing: ' . Timers::getInstance()->getTimers() );
     echo get_template( __PROJECT_ROOT__ . "/Views/hotel-list.php", [
       'hotels' => $hotels,
       'filters' => $formValues,
