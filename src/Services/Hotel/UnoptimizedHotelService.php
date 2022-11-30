@@ -48,18 +48,22 @@ class UnoptimizedHotelService extends AbstractHotelService {
    *
    * @return string|null
    */
-  protected function getMeta ( int $userId, string $key ) : ?string {
+  protected function getMeta ( int $userId) : ?array {
     $db = $this->getDB();
-    $stmt = $db->prepare( "SELECT meta_value FROM wp_usermeta WHERE user_id = :userid AND meta_key = :key" );
+    $stmt = $db->prepare( "SELECT meta_key,meta_value FROM wp_usermeta WHERE user_id = :userid" );
 
     $stmt->bindParam( 'userid', $userId, PDO::PARAM_INT );
-    $stmt->bindParam( 'key', $key, PDO::PARAM_STR );
 
     $stmt->execute();
     
-    $result = $stmt->fetch( PDO::FETCH_ASSOC );
+    $results = $stmt->fetchAll( PDO::FETCH_ASSOC );
+    $output = [];
+
+    foreach($results as $result) {
+      $output[$result['meta_key']] = $result['meta_value'];
+    }
     
-    return $result['meta_value'];
+    return $output;
   }
   
   
@@ -72,18 +76,19 @@ class UnoptimizedHotelService extends AbstractHotelService {
    * @noinspection PhpUnnecessaryLocalVariableInspection
    */
   protected function getMetas ( HotelEntity $hotel ) : array {
+    $data = $this->getMeta( $hotel->getId() );
     $metaDatas = [
       'address' => [
-        'address_1' => $this->getMeta( $hotel->getId(), 'address_1' ),
-        'address_2' => $this->getMeta( $hotel->getId(), 'address_2' ),
-        'address_city' => $this->getMeta( $hotel->getId(), 'address_city' ),
-        'address_zip' => $this->getMeta( $hotel->getId(), 'address_zip' ),
-        'address_country' => $this->getMeta( $hotel->getId(), 'address_country' ),
+        'address_1' => $data['address_1'],
+        'address_2' => $data['address_2'],
+        'address_city' => $data['address_city'],
+        'address_zip' => $data['address_zip'],
+        'address_country' => $data['address_country'],
       ],
-      'geo_lat' =>  $this->getMeta( $hotel->getId(), 'geo_lat' ),
-      'geo_lng' =>  $this->getMeta( $hotel->getId(), 'geo_lng' ),
-      'coverImage' =>  $this->getMeta( $hotel->getId(), 'coverImage' ),
-      'phone' =>  $this->getMeta( $hotel->getId(), 'phone' ),
+      'geo_lat' =>  $data['geo_lat'],
+      'geo_lng' =>  $data['geo_lng'],
+      'coverImage' =>  $data['coverImage'],
+      'phone' =>  $data['phone'],
     ];
     
     return $metaDatas;
@@ -183,10 +188,12 @@ class UnoptimizedHotelService extends AbstractHotelService {
     $stmt = $this->getDB()->prepare($sqlQuery);
 
     foreach ($argsQuery as $arg) {
-      $stmt->bindParam($arg[0],$arg[1]);
+      $stmt->bindParam(':'.$arg[0],$arg[1]);
     }
 
-    $stmt->execute( [ 'hotelId' => $hotel->getId() ] );
+    $stmt->bindValue(':hotelId',$hotel->getId());
+
+    $stmt->execute();
     $result = $stmt->fetch();
     // Si aucune chambre ne correspond aux critères, alors on déclenche une exception pour retirer l'hôtel des résultats finaux de la méthode list().
     if ( !$result )

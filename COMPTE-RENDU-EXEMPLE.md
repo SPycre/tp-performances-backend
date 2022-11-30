@@ -29,63 +29,77 @@ Vous pouvez utiliser ce [GSheets](https://docs.google.com/spreadsheets/d/13Hw27U
 
 - **Avant** 39.80s
 
-- **Après** 26.48s
+- **Après** 24.64s
 
 
-#### Amélioration de la méthode `getMeta` et donc de la méthode `getMeta` :
+#### Amélioration de la méthode `getMetas` et donc de la méthode `getMeta` :
 
-- **Avant** TEMPS
+- **Avant** 4.23s
 
 ```sql
--- REQ SQL DE BASE
+SELECT * FROM wp_usermeta
 ```
 
-- **Après** TEMPS
+- **Après** 2.08s
 
 ```sql
--- NOUVELLE REQ SQL
+SELECT meta_value FROM wp_usermeta WHERE user_id = :userid AND meta_key = :key
 ```
 
 
 
 #### Amélioration de la méthode `getReviews` :
 
-- **Avant** TEMPS
+- **Avant** 11.68s
 
 ```sql
--- REQ SQL DE BASE
+SELECT * FROM wp_posts, wp_postmeta WHERE wp_posts.post_author = :hotelId AND wp_posts.ID = wp_postmeta.post_id AND meta_key = 'rating' AND post_type = 'review'
 ```
 
-- **Après** TEMPS
+- **Après** 9.27s
 
 ```sql
--- NOUVELLE REQ SQL
+SELECT ROUND(AVG(meta_value)) AS rating, COUNT(meta_value) AS count FROM wp_posts, wp_postmeta WHERE wp_posts.post_author = :hotelId AND wp_posts.ID = wp_postmeta.post_id AND meta_key = 'rating' AND post_type = 'review'
 ```
 
 
 
 #### Amélioration de la méthode `getCheapestRoom` :
 
-- **Avant** TEMPS
+- **Avant** 20.70s
 
 ```sql
--- REQ SQL DE BASE
+SELECT * FROM wp_posts WHERE post_author = :hotelId AND post_type = 'room'
 ```
 
-- **Après** TEMPS
+- **Après** 13.05s
 
 ```sql
--- NOUVELLE REQ SQL
+SELECT POST.ID AS id,
+      POST.post_title AS title,
+      surfaceData.meta_value AS surface,
+      MIN(priceData.meta_value) AS price,
+      roomsData.meta_value AS rooms,
+      bathData.meta_value AS bathRooms,
+      typeData.meta_value AS types
+      FROM wp_posts AS POST
+       INNER JOIN tp.wp_postmeta AS surfaceData ON POST.ID = surfaceData.post_id AND surfaceData.meta_key = 'surface'
+        INNER JOIN tp.wp_postmeta AS priceData ON POST.ID = priceData.post_id AND priceData.meta_key = 'price'
+         INNER JOIN tp.wp_postmeta AS roomsData ON POST.ID = roomsData.post_id AND roomsData.meta_key = 'bedrooms_count'
+          INNER JOIN tp.wp_postmeta AS bathData ON POST.ID = bathData.post_id AND bathData.meta_key = 'bathrooms_count'
+           INNER JOIN tp.wp_postmeta AS typeData ON POST.ID = typeData.post_id AND typeData.meta_key = 'type'
+            WHERE post_author = :hotelId AND post_type = 'room'
+             GROUP BY POST.ID ORDER BY price ASC LIMIT 1
 ```
 
 
 
-## Question 5 : Réduction du nombre de requêtes SQL pour `METHOD`
+## Question 5 : Réduction du nombre de requêtes SQL pour `getMeta`
 
 |                              | **Avant** | **Après** |
 |------------------------------|-----------|-----------|
-| Nombre d'appels de `getDB()` | NOMBRE    | NOMBRE    |
- | Temps de `METHOD`            | TEMPS     | TEMPS     |
+| Nombre d'appels de `getDB()` | 1800      | 200       |
+ | Temps de `getMetas`         | 1.54s     | 250ms     |
 
 ## Question 6 : Création d'un service basé sur une seule requête SQL
 
