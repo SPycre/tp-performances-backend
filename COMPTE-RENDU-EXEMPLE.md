@@ -29,26 +29,10 @@ Vous pouvez utiliser ce [GSheets](https://docs.google.com/spreadsheets/d/13Hw27U
 
 - **Avant** 39.80s
 
-- **Après** TEMPS
+- **Après** 26.48s
 
 
-#### Amélioration de la méthode `METHOD` et donc de la méthode `METHOD` :
-
-- **Avant** TEMPS
-
-```sql
--- REQ SQL DE BASE
-```
-
-- **Après** TEMPS
-
-```sql
--- NOUVELLE REQ SQL
-```
-
-
-
-#### Amélioration de la méthode `METHOD` :
+#### Amélioration de la méthode `getMeta` et donc de la méthode `getMeta` :
 
 - **Avant** TEMPS
 
@@ -64,7 +48,23 @@ Vous pouvez utiliser ce [GSheets](https://docs.google.com/spreadsheets/d/13Hw27U
 
 
 
-#### Amélioration de la méthode `METHOD` :
+#### Amélioration de la méthode `getReviews` :
+
+- **Avant** TEMPS
+
+```sql
+-- REQ SQL DE BASE
+```
+
+- **Après** TEMPS
+
+```sql
+-- NOUVELLE REQ SQL
+```
+
+
+
+#### Amélioration de la méthode `getCheapestRoom` :
 
 - **Avant** TEMPS
 
