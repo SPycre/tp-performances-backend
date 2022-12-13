@@ -137,7 +137,7 @@ class UnoptimizedHotelService extends AbstractHotelService {
     $sqlQuery = "SELECT POST.ID AS id, ".
       "POST.post_title AS title, ".
       "surfaceData.meta_value AS surface, ".
-      "MIN(priceData.meta_value) AS price, ".
+      "MIN(CAST(priceData.meta_value AS UNSIGNED)) AS price, ".
       "roomsData.meta_value AS rooms, ".
       "bathData.meta_value AS bathRooms, ".
       "typeData.meta_value AS types ".
